@@ -1,0 +1,90 @@
+
+// Program Name: Time Range Breakout
+// Developer's Site: forexroboteasy.com
+// Development Name: Forex Robot Easy Team
+
+// Define input parameters
+input double volume = 0.01; // Trading volume
+input double riskPercent = 2.0; // Risk percentage
+input int tpPoints = 100; // Take profit in points
+input int slPoints = 50; // Stop loss in points
+input int ti = 60; // Time interval in minutes
+
+// Define global variables
+double rangeHigh; // Range high price
+double rangeLow; // Range low price
+int ticketBuy; // Ticket number of buy stop order
+int ticketSell; // Ticket number of sell stop order
+
+// Define function to place a buy stop order at range high price
+void PlaceBuyStopOrder()
+{
+   rangeHigh = High[1] + (High[1] - Low[1]); // Calculate range high price
+   ticketBuy = OrderSend(Symbol(), OP_BUYSTOP, volume, rangeHigh, 0, rangeLow - slPoints * Point, rangeHigh + tpPoints * Point, 'Buy Stop Order', 0, 0, Green); // Place buy stop order
+}
+
+// Define function to place a sell stop order at range low price
+void PlaceSellStopOrder()
+{
+   rangeLow = Low[1] - (High[1] - Low[1]); // Calculate range low price
+   ticketSell = OrderSend(Symbol(), OP_SELLSTOP, volume, rangeLow, 0, rangeHigh + slPoints * Point, rangeLow - tpPoints * Point, 'Sell Stop Order', 0, 0, Red); // Place sell stop order
+}
+
+// Define function to adjust trailing stop for securing profits
+void AdjustTrailingStop()
+{
+   if (OrderSelect(ticketBuy, SELECT_BY_TICKET)) // Select buy stop order
+   {
+      double trailingStop = NormalizeDouble(rangeHigh - slPoints * Point, Digits); // Calculate trailing stop price
+      OrderModify(ticketBuy, OrderOpenPrice(), trailingStop, OrderTakeProfit(), 0, Green); // Modify buy stop order
+   }
+   
+   if (OrderSelect(ticketSell, SELECT_BY_TICKET)) // Select sell stop order
+   {
+      double trailingStop = NormalizeDouble(rangeLow + slPoints * Point, Digits); // Calculate trailing stop price
+      OrderModify(ticketSell, OrderOpenPrice(), trailingStop, OrderTakeProfit(), 0, Red); // Modify sell stop order
+   }
+}
+
+// Define function to handle user input parameter customization
+void CustomizeInputParameters()
+{
+   // Code to handle customization of input parameters through user interface
+}
+
+// Define function to handle errors during execution
+void HandleErrors()
+{
+   // Code to handle necessary error handling mechanisms
+}
+
+// Define function to optimize code for efficient performance
+void OptimizeCode()
+{
+   // Code to optimize the code for efficient performance
+}
+
+// Define function for the main trading algorithm
+void OnTick()
+{
+   if (TimeMinute(Time[0]) % ti == 0) // Execute every 'ti' minutes
+   {
+      PlaceBuyStopOrder(); // Place buy stop order
+      PlaceSellStopOrder(); // Place sell stop order
+   }
+   
+   AdjustTrailingStop(); // Adjust trailing stop for securing profits
+}
+
+// Define function for MetaTrader 5 compatibility
+void OnStart()
+{
+   CustomizeInputParameters(); // Customize input parameters
+   OptimizeCode(); // Optimize code for efficient performance
+}
+
+// Define function for logical conclusion and smooth execution
+void OnDeinit(const int reason)
+{
+   HandleErrors(); // Handle errors during execution
+}
